@@ -34,8 +34,17 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
+    const userCollection = client.db('arendelleDb').collection('users');
     const propertyCollection = client.db('arendelleDb').collection('properties');
     const wishlistCollection = client.db('arendelleDb').collection('wishlist');
+
+
+    // user related api
+    app.post("/users", async(req, res)=>{
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result)
+    })
 
     app.get('/properties', async(req, res) =>{
       const result = await propertyCollection.find().toArray()
@@ -51,6 +60,8 @@ async function run() {
     })
 
     //wishlist collection
+
+    
 
     app.get('/wishlist', async(req, res)=>{
       const email = req.query.email
