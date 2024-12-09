@@ -52,11 +52,20 @@ async function run() {
 
     //wishlist collection
 
+    app.get('/wishlist', async(req, res)=>{
+      const email = req.query.email
+      const query = {email:email}
+      const result = await wishlistCollection.find(query).toArray()
+      res.send(result)
+    })
+
     app.post("/wishlist", async(req, res)=>{
       const wishlistItem = req.body;
       const result = await wishlistCollection.insertOne(wishlistItem)
       res.send(result)
     })
+
+    
 
 
     // Send a ping to confirm a successful connection
