@@ -4,21 +4,13 @@ const cors = require('cors');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-     
-    ]
-  })
-);
 
-// const corsOptions = {
-//   origin: ['http://localhost:5173'],
-//   credentials: true,
-//   optionSuccessStatus: 200,
-// }
-// app.use(cors(corsOptions))
+const corsOptions = {
+  origin: ['http://localhost:5173'],
+  credentials: true,
+  optionSuccessStatus: 200,
+}
+app.use(cors(corsOptions))
 
 
 app.use(express.json());
@@ -43,6 +35,7 @@ async function run() {
     // await client.connect();
 
     const propertyCollection = client.db('arendelleDb').collection('properties');
+    const wishlistCollection = client.db('arendelleDb').collection('wishlist');
 
     app.get('/properties', async(req, res) =>{
       const result = await propertyCollection.find().toArray()
@@ -54,6 +47,14 @@ async function run() {
       const id = req.params.id 
       const query = {_id: new ObjectId(id)}
       const result = await propertyCollection.findOne(query)
+      res.send(result)
+    })
+
+    //wishlist collection
+
+    app.post("/wishlist", async(req, res)=>{
+      const wishlistItem = req.body;
+      const result = await wishlistCollection.insertOne(wishlistItem)
       res.send(result)
     })
 
