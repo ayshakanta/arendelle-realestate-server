@@ -71,43 +71,89 @@ async function run() {
 
     // use verify admin 
 
-    const verifyAdmin = async (req, res, next)=>{
-      const email = req.decoded.email 
-      const query = {email: email}
-      const user = await userCollection.find(query)
-      const isAdmin = user?.role === 'admin'
+    // const verifyAdmin = async (req, res, next)=>{
+    //   const email = req.decoded.email 
+    //   const query = {email: email}
+    //   const user = await userCollection.find(query)
+    //   const isAdmin = user?.role === 'admin'
       
-      if(!isAdmin){
-        return res.status(403).send({message: "forbidden access"})
-      }
-      next()
+    //   if(!isAdmin){
+    //     return res.status(403).send({message: "forbidden access"})
+    //   }
+    //   next()
 
-    }
+    // }
 
     // use verify agent 
 
-    const verifyAgent = async (req, res, next)=>{
-      const email = req.decoded.email 
-      const query = {email: email}
-      const user = await userCollection.find(query)
-      const isAgent = user?.role === 'agent'
+    // const verifyAgent = async (req, res, next)=>{
+    //   const email = req.decoded.email 
+    //   const query = {email: email}
+    //   const user = await userCollection.find(query)
+    //   const isAgent = user?.role === 'agent'
       
-      if(!isAgent){
-        return res.status(403).send({message: "forbidden access"})
-      }
-      next()
+    //   if(!isAgent){
+    //     return res.status(403).send({message: "forbidden access"})
+    //   }
+    //   next()
 
-    }
+    // }
+
+
+
+    // const verifyAdminOrAgent = async (req, res, next) => {
+    //   const email = req.decoded.email;
+    //   const query = { email: email };
+    //   const user = await userCollection.findOne(query);
+    
+    //   if (!user || (user.role !== 'admin' && user.role !== 'agent')) {
+    //     return res.status(403).send({ message: "Forbidden access" });
+    //   }
+    
+    //   next();
+    // };
 
 
     // user related api
 
-    app.get("/users",verifyToken, verifyAdmin, verifyAgent, async(req, res)=>{
+    // app.get("/users", verifyToken, verifyAdmin, async(req, res)=>{
       
-      const result = await userCollection.find().toArray()
-      res.send(result)
-    })
+    //   const result = await userCollection.find().toArray()
+    //   res.send(result)
+    // })
 
+    // app.get("/users", verifyToken, verifyAgent, async(req, res)=>{
+      
+    //   const result = await userCollection.find().toArray()
+    //   res.send(result)
+    // })
+
+    // app.get("/users", verifyToken, verifyAdminOrAgent, async (req, res) => {
+    //   const result = await userCollection.find().toArray();
+    //   res.send(result);
+    // });
+
+
+
+    app.get("/users", verifyToken, async (req, res) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+    
+      if (!user) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+    
+      if (user.role === 'admin') {
+        const result = await userCollection.find().toArray(); // Admins see all users
+        return res.send(result);
+      } else if (user.role === 'agent') {
+        const result = await userCollection.find({ role: 'agent' }).toArray(); // Agents see only agents
+        return res.send(result);
+      } else {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+    });
 
     app.get("/users/admin/:email", verifyToken, async(req, res)=>{
       const email = req.params.email 
