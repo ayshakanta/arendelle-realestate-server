@@ -84,10 +84,25 @@ async function run() {
 
     }
 
+    // use verify agent 
+
+    const verifyAgent = async (req, res, next)=>{
+      const email = req.decoded.email 
+      const query = {email: email}
+      const user = await userCollection.find(query)
+      const isAgent = user?.role === 'agent'
+      
+      if(!isAgent){
+        return res.status(403).send({message: "forbidden access"})
+      }
+      next()
+
+    }
+
 
     // user related api
 
-    app.get("/users",verifyToken, verifyAdmin, async(req, res)=>{
+    app.get("/users",verifyToken, verifyAdmin, verifyAgent, async(req, res)=>{
       
       const result = await userCollection.find().toArray()
       res.send(result)
@@ -153,7 +168,7 @@ async function run() {
 
     // make agent 
 
-    app.patch("/users/agent/:id", async(req, res)=>{
+    app.patch("/users/agent/:id", verifyToken, verifyAgent, async(req, res)=>{
       const id = req.params.id 
       const filter = {_id: new ObjectId(id)}
       const updatedDoc ={
